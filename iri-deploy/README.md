@@ -1,9 +1,10 @@
 ## Deploy project
 ```
-ansible-playbook /home/gitlab-runner/playbooks/hive-deploy/deploy.yml -i /home/gitlab-runner/playbooks/hive-deploy/inventory/dev -e "env=hive" -e "IMAGE=$IMAGE"  -e "port=8081"
+This is example of deployment (sometime build) docker apps via ansible playbooks. Some of this applications use python script for fetching config files from GitLab repository.
+
 ```
 ### Dependencies
 
 Client side:
 Docker-compose <=1.15
-Required python module docker ( ```pip install docker```)
+Required python module docker ( best way to install it ```pip install docker-compose && easy_install docker```)
