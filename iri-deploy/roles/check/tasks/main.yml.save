@@ -1,0 +1,10 @@
+---
+
+- name: get container status
+#  raw: docker stats --all --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+  shell: cadocker ps | less -S
+  register: status
+
+- name: show container status
+  debug:
+    msg: "{{ status }}"

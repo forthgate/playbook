@@ -1,0 +1,48 @@
+---
+#- include_vars: vars/{{ app }}.yml
+- include_vars: vars/{{ app }}.yml
+
+- include_vars: vars/{{ app }}.yml
+  tags: restart
+
+- name: restart "{{ app }}" container
+  docker_container:
+    name: "{{ app }}"
+    image: "{{ image }}"
+    restart: yes
+    state: started
+  tags: restart
+
+- name: remove "{{ app }}" container
+  docker_container:
+    name: "{{ app }}"
+    state: absent
+
+- name: Remove local "{{ app }}" image
+  docker_image:
+    state: absent
+    name: "{{ image }}"
+
+- name: Create a network with options
+  docker_network:
+    name: iri
+    ipam_options:
+      subnet: '172.91.0.0/24'
+
+- name: Deploy "{{ app }}" container
+  docker_service:
+    project_name: "{{ app }}"
+    pull: yes
+    definition:
+      version: '3.4'
+      services:
+        test:
+          image: "{{ image }}"
+          container_name: "{{ app }}"
+          ports:
+          - "{{ ports }}"
+          restart: always
+      networks:
+        default:
+          external:
+             name: iri

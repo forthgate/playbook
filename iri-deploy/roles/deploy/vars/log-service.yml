@@ -1,0 +1,2 @@
+image: registry.example.com/log-service
+ports: 8284:8284

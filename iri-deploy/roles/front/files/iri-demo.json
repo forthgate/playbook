@@ -1,0 +1,19 @@
+{
+    "public": {
+        "title": "Контактный центр",
+        "name": "bks-prod",
+        "amcSessionEndpoint": "https://api.amc.ics.example.com/app/users/session",
+        "amcAuthEndpoint": "https://ekc.auth.amc.ics.example.com",
+        "amcPublicKey": "PxUFnkDWCSi5nfCfLc4DAsWY1B0lN0u_KJq27_BFoA2qapj_N6QKNQLu-Hj0jZcw",
+        "apiEndPoint": "",
+        "journalEndPoint": "https://172.26.133.229:8284",
+        "applicationEndPoint": "https://api.ekc.ics.example.com",
+        "clientEndPoint": "https://172.26.133.242:8016/api",
+        "blackListEndPoint": "https://172.26.133.250:3014",
+        "mpayServiceApi": "https://172.26.133.229:8333",
+        "host": "https://ekc.ics.example.com"
+    },
+    "private": {
+        "amcPrivateKey": "Tdz3dCAaoI4FrzvBqJ-g5qEGViPAKJmjRoKH95uGaZ1vvT9STbJITm1L87vTv33e"
+    }
+}

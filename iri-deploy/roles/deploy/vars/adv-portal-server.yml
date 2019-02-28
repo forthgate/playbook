@@ -1,0 +1,2 @@
+image: registry.example.com/adv-portal-server
+ports: 8700:8080

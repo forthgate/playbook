@@ -1,0 +1,2 @@
+image: registry.example.com/report-service
+ports: 8081:8081

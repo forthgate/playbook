@@ -1,0 +1,2 @@
+ports: 8283:8283
+image: registry.example.com/app-service-20181018

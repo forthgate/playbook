@@ -1,0 +1,2 @@
+image: registry.example.com/concierge:stage
+ports: 8000:80

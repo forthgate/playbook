@@ -1,0 +1,17 @@
+PORT=3014
+COOKIE_SECRET=Fauni5ppbp4890dJhGzWbJL-UFKUaR…ximwTD5sH2pV_uulYMgEFSualpNwL
+AMC_PRIVATE_TOKEN=OBiGk6ccWwGvDXaxvaDO6Td0lGwk5gcN6Vq5cJwmB8XBRH5fW16VlK_aawPDBATn
+AMC_PUBLIC_TOKEN=eEfJDsgS5IbVR9O_ph64ka-d4pCxENj3O8MSnCs_pVuLoVzWwnSIxmE-QZMc24NL
+AMC_URL=https://api-amc-iri-prod.example.com/
+NODE_ENV=production
+MONGO_URI=mongodb://test:test@172.16.16.35/blacklist
+WS_LOGIN=artemis
+WS_PASS=simetraehcapa
+WS_TOPIC=jms.topic.application_state
+WS_HOST=artemis
+WS_PORT=61613
+WS_CLIENT_ID=black-list-application-state-subscription
+WS_DURABLE_SUBSCRIBER_NAME=black-list-broker
+EKC_URI=https://api-ekc-iri-prod.example.com
+EKC_TOKEN=YUOc4NgiYnRir2eVaVS3AwifjP7uIAma-RXeJvWUjrAJIAsaNRumCG8CYKsqEF-o
+

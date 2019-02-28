@@ -1,0 +1,2 @@
+image: registry.example.com/validation-service
+ports: 8004:8004

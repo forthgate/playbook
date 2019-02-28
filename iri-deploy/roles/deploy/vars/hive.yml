@@ -1,0 +1,2 @@
+image: registry.example.com/hive:{{ env }}
+ports: 8701:80

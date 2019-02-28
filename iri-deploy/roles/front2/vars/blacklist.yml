@@ -1,0 +1,2 @@
+image: registry.example.com/blacklist
+ports: 3014:3014

@@ -1,0 +1,7 @@
+### Develop environment ###
+
+[stage]
+172.33.33.201 ansible_user=apps
+
+[stage-db]
+172.33.33.202 ansible_user=apps

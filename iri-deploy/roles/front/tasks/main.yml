@@ -1,0 +1,65 @@
+---
+- include_vars: vars/{{ app }}.yml
+
+- include_vars: vars/{{ app }}.yml
+  tags: restart
+
+- name: Restart "{{ app }}" container
+  docker_container:
+    name: "{{ app }}"
+    restart: yes
+    state: started
+  tags:
+    - restart
+
+- name: Remove "{{ app }}" container
+  docker_container:
+    name: "{{ app }}"
+    state: absent
+
+- name: Remove local "{{ app }}" image
+  docker_image:
+    state: absent
+    name: "{{ image }}"
+
+- name: Create a network with options
+  docker_network:
+    name: iri
+    ipam_options:
+      subnet: '172.91.0.0/24'
+
+- name: Copy config for "{{ app }}"
+  copy:
+    src: "{{ role_path }}/files/{{ env }}.json"
+    dest: "/opt/app/config/bks_prod/production.json"
+  when: app == 'ekc-front'
+
+- name: Copy config for "{{ app }}"
+  copy:
+    src: "{{ role_path }}/files/hive.json"
+    dest: "/app/.env"
+  when: app == 'hive'
+
+- name: Deploy "{{ app }}" container
+  docker_service:
+    project_name: "{{ app }}"
+    pull: yes
+    definition:
+      version: '3.4'
+      services:
+        test:
+          image: "{{ image }}"
+          container_name: "{{ app }}"
+          ports:
+          - "{{ ports }}"
+          volumes:
+          - "/opt/app/config/bks_prod/:/opt/app/config/bks_prod/"
+          environment:
+            CONFIG_URL: http://172.26.133.229:8761/config
+            CONFIG_NAME: "{{ app }}"
+            CONFIG_PROFILE: iri-stage
+          restart: always
+      networks:
+       default:
+        external:
+           name: iri

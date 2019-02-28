@@ -1,0 +1,3 @@
+image: registry.example.com/mpay-service
+ports: 8333:8333
+

@@ -1,0 +1,2 @@
+image: registry.example.com/retail-rest-api
+ports: 8016:8016

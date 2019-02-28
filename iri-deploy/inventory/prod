@@ -1,0 +1,7 @@
+### Production environment ###
+
+[prod]
+172.16.16.33 ansible_user=master
+
+[prod-db]
+172.16.16.35 ansible_user=master

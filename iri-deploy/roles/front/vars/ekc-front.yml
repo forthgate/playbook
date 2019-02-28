@@ -1,0 +1,2 @@
+image: registry.example.com/ekc-front:dev
+ports: 3100:8087

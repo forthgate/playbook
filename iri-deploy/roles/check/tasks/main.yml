@@ -1,0 +1,9 @@
+---
+
+- name: get container status
+  raw: docker-pretty-ps
+  register: status
+
+- name: show container status
+  debug:
+    msg: "{{ status.stdout_lines }}"

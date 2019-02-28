@@ -1,0 +1,53 @@
+- include_vars: vars/main.yml
+
+- name: Clear build directory
+  file:
+    state: absent
+    path: "{{ path }}"
+
+- name: Remove old image
+  docker_image:
+    state: absent
+    name: "registry.example.com/{{ app }}:{{ env }}"
+
+- name: Clone {{ app }} repository
+  git:
+    repo: git@gitlab.example.com:sites/{{ app }}.git
+    dest: "{{ path }}"
+    accept_hostkey: True
+    version: master
+    key_file: /home/master/.ssh/id_rsa
+    force: True
+  when: app == "hive"
+
+- name: Clone {{ app }} repository
+  git:
+    repo: git@gitlab.example.com:checkpay-front/{{ app }}.git
+    dest: "{{ path }}"
+    accept_hostkey: True
+    version: master
+    key_file: /home/master/.ssh/id_rsa
+    force: True
+  when: app == "invest" or app == "black-invest"
+
+
+- name: Copy script for config to directory
+  template:
+    src: configfetch.py
+    dest: "{{ path }}"
+
+- name: Fetch config from config repos
+  script: "{{ path }}/configfetch.py"
+
+- name: Install required NodeJS modules
+  shell:  cd "{{ path }}" && npm i
+
+- name: Build project
+  shell: cd "{{ path }}" && npm run build:dev
+
+- name: Build container
+  docker_image:
+    path: "{{ path }}"
+    name: registry.example.com/{{ app }}
+    tag: "{{ env }}"
+    push: yes

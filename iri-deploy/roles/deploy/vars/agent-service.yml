@@ -1,0 +1,6 @@
+image: registry.example.com/agent-service
+<<<<<<< HEAD
+ports: 8014:8019
+=======
+ports: 8014:8013
+>>>>>>> 973e33f2e803db2e8f555f724ffbdbb7f1793bb9

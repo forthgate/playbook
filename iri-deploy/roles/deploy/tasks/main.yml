@@ -1,0 +1,134 @@
+---
+- include_vars: vars/{{ app }}.yml
+
+- include_vars: vars/{{ app }}.yml
+  tags: restart
+
+- name: restart "{{ app }}" container
+  docker_container:
+    name: "{{ app }}"
+    restart: yes
+    state: started
+  tags:
+    - restart
+
+- name: remove "{{ app }}" container
+  docker_container:
+    name: "{{ app }}"
+    state: absent
+
+- name: Remove local "{{ app }}" image
+  docker_image:
+    state: absent
+    name: "{{ image }}"
+
+- name: Create a network with options
+  docker_network:
+    name: iri
+    ipam_options:
+      subnet: '172.91.0.0/24'
+
+- name: Deploy "{{ app }}" container
+  docker_service:
+    project_name: "{{ app }}"
+    pull: yes
+    definition:
+      version: '3.4'
+      services:
+        test:
+          image: "{{ image }}"
+          container_name: "{{ app }}"
+          ports:
+          - "{{ ports }}"
+          environment:
+            CONFIG_URL: http://admin-service:8761/config
+            CONFIG_NAME: "{{ app }}"
+            CONFIG_PROFILE: "{{ env }}"
+          restart: always
+      networks:
+       default:
+        external:
+           name: iri
+        # ekc-back:
+        #   image: "registry.example.com/app-service"
+        #   container_name: ekc-back
+        #   restart: always
+        #   ports:
+        #   - "8283:8283"
+        #   environment:
+        #     CONFIG_URL: http://172.26.133.229:8761/config
+        #     CONFIG_NAME: ekc
+        #     CONFIG_PROFILE: iri-test
+        # retail-adapter:
+        #   image: "registry.example.com/retail-adapter"
+        #   container_name: retail-adapter
+        #   environment:
+        #     CONFIG_URL: http://172.26.133.229:8761/config
+        #     CONFIG_NAME: retail-adapter
+        #     CONFIG_PROFILE: iri-test
+        #     JAVA_OPTS: "-XX:+UseG1GC -Xmx800m"
+        #   restart: always
+        #   ports:
+        #     - 8007:8007
+        # invest-adapter:
+        #   image: "registry.example.com/invest-adapter"
+        #   container_name: invest-adapter
+        #   environment:
+        #     CONFIG_URL: http://172.26.133.229:8761/config
+        #     CONFIG_NAME: invest-adapter
+        #     CONFIG_PROFILE: iri-test
+        #     JAVA_OPTS: "-XX:+UseG1GC -Xmx800m"
+        #   restart: always
+        #   ports:
+        #   - 8013:8013
+        #   volumes:
+        #     - /app/certs:/certs
+        # artemis:
+        #   image: "vromero/activemq-artemis:latest"
+        #   container_name: "artemis"
+        #   restart: always
+        # mpay-service:
+        #   image: "registry.example.com/mpay-service"
+        #   environment:
+        #     CONFIG_URL: http://172.26.133.229:8761/config
+        #     CONFIG_NAME: mpay-service
+        #     CONFIG_PROFILE: iri-test
+        #     JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=8003,server=y,suspend=n -XX:+UseG1GC -Xmx1200m -Djava.security.egd=file:/dev/urandom"
+        #   container_name: mpay-service
+        # validation-service:
+        #   image: "registry.example.com/validation-service"
+        #   container_name: validation-service
+        #   environment:
+        #     CONFIG_URL: http://172.26.133.229:8761/config
+        #     CONFIG_NAME: validation-service
+        #     CONFIG_PROFILE: iri-test
+        #     JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=8003,server=y,suspend=n -XX:+UseG1GC -Xmx1200m -Djava.security.egd=file:/dev/urandom"
+        #   restart: always
+        #   ports:
+        #   - 8004:8004
+        #   - 8006:8003
+        # adv-portal-server:
+        #   image: "registry.example.com/adv-portal-server"
+        #   container_name: adv-portal-server
+        #   restart: always
+        #   ports:
+        #   - "8001:8080"
+        #   - "8003:8003"
+        #   environment:
+        #     CONFIG_URL: http://172.26.133.229:8761/config
+        #     CONFIG_NAME: adv-portal
+        #     CONFIG_PROFILE: iri-test
+        #     JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=8003,server=y,suspend=n -XX:+UseG1GC -Xmx2400m"
+        #  adv-portal-front:
+        #   image: "registry.example.com/adv-portal-front"
+        #   build: ./frontend
+        #   container_name: adv-portal-front
+        #   depends_on:
+        #   - adv-portal-server
+        #   restart: always
+        #   environment:
+        #     SERVER_HOST: http://api.inkaro.example.com
+        #     DICTIONARY_HOST: https://dict.example.com
+        #     DICTIONARY_PORT: 443
+        #   ports:
+        #   - "8002:8000"

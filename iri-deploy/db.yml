@@ -1,0 +1,4 @@
+- hosts: "{{ env }}-db"
+  remote_user: apps
+  roles:
+    - db
