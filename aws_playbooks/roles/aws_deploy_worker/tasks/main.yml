@@ -9,9 +9,6 @@
       - 'apt-daily'
       - 'unattended-upgrades'
 
-- pause:
-    minutes: 5
-
 - name: Install packages
   apt:
     force_apt_get: yes
