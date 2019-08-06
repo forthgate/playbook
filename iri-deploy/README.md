@@ -6,4 +6,4 @@ This is example of deployment (sometime build) docker apps via ansible playbooks
 
 Client side:
 Docker-compose <=1.15
-Required python module docker ( best way to install it ```pip install docker-compose && easy_install docker```)
+Required python module docker and docker-compose
