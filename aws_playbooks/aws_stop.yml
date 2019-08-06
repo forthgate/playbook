@@ -1,0 +1,6 @@
+### Stop AWS EC2 Instance ###
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  roles:
+    - aws_stop

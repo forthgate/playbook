@@ -1,0 +1,148 @@
+---
+
+- include_vars:
+    dir: vars
+    extensions:
+      - yml
+
+- include_vars:
+    dir: vars/{{ env }}
+
+- name: Clean old data
+  file:
+    path: "/home/master/genauto/{{ worker }}.{{ type }}.yml"
+    state: absent
+
+- name: Clean /tmp folder
+  file:
+    path: "/tmp/{{ worker }}.{{ type }}.j2"
+    state: absent
+  delegate_to: localhost
+
+- name: Mount NFS share from {{ host }}
+  mount:
+    path: /data/
+    src: "{{ storage }}"
+    fstype: nfs
+    state: mounted
+  become: yes
+  when: inventory_hostname != 'sam.lan'
+
+- name: Remove symlink CUDA
+  file:
+    path: /usr/local/cuda
+    state: absent
+  become: true
+  when: type == 'gpu' and inventory_hostname != 'sam.lan'
+
+
+- name: Create symlink to CUDA 9.0
+  file:
+    src: /usr/local/cuda-9.0
+    dest: /usr/local/cuda
+    state: link
+  become: true
+  when: type == 'gpu' and inventory_hostname != 'sam.lan'
+
+
+- name: Install python docker library
+  pip:
+    name: docker
+  register: task_result
+  until: task_result is success
+  retries: 10
+  delay: 2
+  become: yes
+
+- name: Install python docker-compose library
+  pip:
+    name: docker-compose[tls]
+  register: task_result
+  until: task_result is success
+  retries: 10
+  delay: 2
+  become: yes
+
+- name: Login to docker registry
+  docker_login:
+    registry: registry.gitlab.com
+    username: avdushkin@insilicomedicine.com
+    password: "{{ password }}"
+    reauthorize: yes
+
+- name: Create project directory
+  file:
+    path: /home/master/genauto
+    state: directory
+
+- name: Create secrets directory
+  file:
+    path: /home/master/genauto/secrets
+    state: directory
+
+- name: Copy env files
+  template:
+    src: "{{ item }}"
+    dest: /home/master/genauto/secrets/{{ item | basename | regex_replace('\.j2','') }}.env
+  with_fileglob:
+    - templates/*.j2
+
+- name: Get template of compose file
+  get_url:
+    url: "{{ url }}"
+    dest: "/tmp/{{ worker }}.{{ type }}.j2"
+    headers:
+      private-token: "{{ token }}"
+  delegate_to: localhost
+
+- name: Copy {{ worker }} compose file from template
+  template:
+    src: "/tmp/{{ worker }}.{{ type }}.j2"
+    dest: "/home/master/genauto/{{ worker }}.{{ type }}.{{ env }}.yml"
+
+- name: Run cadvisor container
+  docker_compose:
+    project_name: flask
+    definition:
+      version: '2.3'
+      services:
+        cadvisor:
+          image: google/cadvisor:latest
+          container_name: cadvisor
+          ports:
+            - 8089:8080
+          volumes:
+            - /:/rootfs:ro
+            - /var/run:/var/run:rw
+            - /sys:/sys:ro
+            - /var/lib/docker/:/var/lib/docker:ro
+  when: worker | search("worker")
+
+- name: Stop genauto containers
+  docker_compose:
+    project_src: "/home/master/genauto"
+    files:
+      - "{{ worker }}.{{ type }}.{{ env }}.yml"
+    recreate: always
+    state: absent
+
+- name: Run genauto containers
+  docker_compose:
+    project_src: "/home/master/genauto"
+    files:
+      - "{{ worker }}.{{ type }}.{{ env }}.yml"
+    recreate: always
+    state: present
+  register: task_result
+  until: task_result is success
+  retries: 1000
+
+- name:  Docker logout
+  docker_login:
+     state: absent
+
+- name: Clean /tmp folder
+  file:
+    path: "/tmp/{{ worker }}.{{ type }}.j2"
+    state: absent
+  delegate_to: localhost

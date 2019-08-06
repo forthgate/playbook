@@ -1,0 +1,5 @@
+
+###### GITLAB VARIABLES ######
+url: "https://gitlab.com/api/v4/projects/4792/repository/files/deploy%2Ftemplate.{{ worker }}.{{ type }}.yml/raw?ref=master"
+token: "token"
+password: "password"

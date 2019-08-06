@@ -1,0 +1,72 @@
+---
+- include_vars: vars/aws_cred.yml
+
+- include_vars:
+    file: vars/{{ env }}/aws_{{ worker }}.yml
+
+- name: Create required security groups
+  ec2_group:
+    ec2_access_key: "{{ aws_access_key }}"
+    ec2_secret_key: "{{ aws_secret_key }}"
+    name: "genauto-worker"
+    description: "genauto-worker"
+    region: "{{ region }}"
+    vpc_id: "{{ vpc_id }}"
+    rules:
+      - proto: tcp
+        ports:
+        - 22
+        - 9100
+        - 8793
+        - 9101
+        cidr_ip: 192.168.2.0/24
+        rule_desc: allow LAN on port 22,9100,8793
+      - proto: icmp
+        from_port: -1
+        to_port:  -1
+        cidr_ip: 192.168.2.0/24
+
+- name: create key pair using key_material obtained using 'file' lookup plugin
+  ec2_key:
+    ec2_access_key: "{{ aws_access_key }}"
+    ec2_secret_key: "{{ aws_secret_key }}"
+    ec2_region: "{{ region }}"
+    name: worker_key
+    key_material: "{{ lookup('file', '/home/new/.ssh/id_rsa.pub') }}"
+
+- name: Create {{ worker }} instance
+  ec2:
+    ec2_access_key: "{{ aws_access_key }}"
+    ec2_secret_key: "{{ aws_secret_key }}"
+    instance_type: "{{ instance_type }}"
+    image: "{{ ami_id }}"
+    volumes:
+      - device_name: "{{ volume_path }}"
+        volume_type: gp2
+        volume_size: 50
+    vpc_subnet_id: "{{ vpc_subnet_id }}"
+    private_ip: "{{ private_ip }}"
+    ec2_region: "{{ region }}"
+    group: "genauto-worker"
+    keypair: worker_key
+    wait: true
+    instance_tags:
+       Name: "{{ worker }}_{{ type }}_{{ env }}"
+       Env: "{{ env }}"
+    count_tag:
+       Name: "{{ worker }}"
+    exact_count: 1
+  register: ec2
+
+- name: Add new instance to host group
+  add_host:
+    hostname: "{{ item.private_ip }}"
+    groupname: "{{ worker }}"
+  with_items: "{{ ec2.instances }}"
+
+- name: Wait for SSH to come up
+  local_action: wait_for
+     host={{ item.private_ip }}
+     port=22
+     state=started
+  with_items: "{{ ec2.instances }}"

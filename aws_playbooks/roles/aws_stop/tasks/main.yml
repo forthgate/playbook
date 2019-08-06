@@ -1,0 +1,40 @@
+---
+- include_vars: vars/aws_cred.yml
+
+- include_vars:
+    file: vars/{{ env }}/aws_{{ worker }}.yml
+
+- ec2_instance_facts:
+    ec2_region: "{{ region }}"
+    ec2_access_key: "{{ aws_access_key }}"
+    ec2_secret_key: "{{ aws_secret_key }}"
+    filters:
+      "tag:Name": "{{ worker }}_{{ type }}_{{ env }}"
+      "tag:Env": "{{ env }}"
+  register: facts2
+
+
+- debug:
+    msg: "Instance {{ item.0 }} with id {{ item.1 }} will be {{ status }}"
+  with_together:
+    - "{{ facts2.instances|selectattr('state.name', 'equalto', 'stopped')|map(attribute='tags.Name')|list  }}"
+    - "{{ facts2.instances|selectattr('state.name', 'equalto', 'stopped') | selectattr('tags.Name', 'equalto', worker ) |map(attribute='instance_id')|list  }}"
+
+
+- name: Set  instance {{ worker }} to {{ status }} state
+  ec2_instance:
+    ec2_region: "{{ region }}"
+    ec2_access_key: "{{ aws_access_key }}"
+    ec2_secret_key: "{{ aws_secret_key }}"
+    state: "{{ status }}"
+    filters:
+      "tag:Name": "{{ worker }}_{{ type }}_{{ env }}"
+      "tag:Env": "{{ env }}"
+  ignore_errors: yes
+
+- name: Send notify
+  slack:
+    token: "{{ token }}"
+    msg: " AWS instance state {{ status }}: \n :no_entry: {{ worker }}-{{ env }}.lan :no_entry:  "
+    channel: '#alerts'
+    username: 'Ansible'

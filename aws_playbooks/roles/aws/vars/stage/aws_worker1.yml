@@ -1,0 +1,7 @@
+ami_id:  "ami-05ca11a79fafd6ebe"
+instance_type: "p2.8xlarge"
+region: us-east-1
+private_ip: 10.200.30.20
+vpc_id: vpc-099070c6f06647c48
+vpc_subnet_id: subnet-006ef405158b03830
+volume_path: /dev/sda1

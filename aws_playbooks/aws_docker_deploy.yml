@@ -1,0 +1,5 @@
+- hosts: "{{ worker }}"
+  remote_user: master
+  gather_facts: True
+  roles:
+    - aws_docker_deploy

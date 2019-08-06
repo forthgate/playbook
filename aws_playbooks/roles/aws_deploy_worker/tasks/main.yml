@@ -1,0 +1,92 @@
+---
+- name: stop service
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+      - 'apt-daily-upgrade'
+      - 'apt-daily'
+      - 'unattended-upgrades'
+
+- pause:
+    minutes: 5
+
+- name: Install packages
+  apt:
+    force_apt_get: yes
+    force: yes
+    pkg:
+      - docker.io
+      - prometheus-node-exporter
+      - htop
+      - iotop
+      - nfs-common
+      - python-pip
+    state: present
+    update_cache: yes
+
+- name: Install docker-compose
+  get_url:
+    url: "{{ docker_compose_url }}"
+    dest: /usr/local/bin/docker-compose
+    mode: 'a+x'
+
+- name: Start and enable node exporter
+  systemd:
+    state: started
+    enabled: yes
+    name: prometheus-node-exporter
+
+- name: Copy gpu exporter
+  copy:
+    src: "{{ role_path }}/files/nvidia_smi_exporter"
+    dest: /usr/bin/nvidia_smi_exporter
+    mode: +x
+  when: worker == 'worker1'
+
+- name: Copy systemd file for exporter
+  copy:
+    src: "{{ role_path }}/files/gpu_exporter.service"
+    dest: /etc/systemd/system/gpu_exporter.service
+  when: worker == 'worker1'
+
+- name: Enable and start gpu exporter
+  systemd:
+    name: gpu_exporter
+    enabled: yes
+    state: restarted
+    daemon_reload: yes
+  when: worker == 'worker1'
+
+- name: Add  user 'master'
+  user:
+    name: master
+    shell: /bin/bash
+    comment: master
+    uid: 1040
+    groups: sudo, docker
+
+- name: Allow 'sudo' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%sudo'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+
+- name: Copy authorized ssh keys
+  authorized_key:
+    user: master
+    state: present
+    key: '{{ item }}'
+  with_file:
+    - "{{ role_path }}/files/ssh/example_key"
+
+
+- name: Create directory for nfs
+  file:
+    path: /data
+    state: directory
+    mode: '0777'

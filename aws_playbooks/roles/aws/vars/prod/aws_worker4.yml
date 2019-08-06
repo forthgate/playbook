@@ -1,0 +1,8 @@
+### CPU WORKER ###
+ami_id:  "ami-736d1602"
+instance_type: "c5.9xlarge"
+region: "ap-east-1"
+vpc_id: "vpc-074dc3a17594c3edd"
+private_ip: "10.100.10.7"
+vpc_subnet_id: subnet-0d0266921e4837c2b
+volume_path: /dev/sda1

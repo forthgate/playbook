@@ -1,0 +1,45 @@
+---
+- include_vars: vars/aws_cred.yml
+
+- ec2_instance_facts:
+    ec2_region: us-east-2
+    ec2_access_key: "{{ aws_access_key }}"
+    ec2_secret_key: "{{ aws_secret_key }}"
+    filters:
+      "tag:Name": "{{ worker }}"
+      instance-state-name: running
+  register: facts
+
+- debug:
+    msg: "{{ facts }}"
+
+- name: State to "{{ state }}" to {{ worker }} instance
+  ec2_instance:
+    ec2_region: us-east-2
+    ec2_access_key: "{{ aws_access_key }}"
+    ec2_secret_key: "{{ aws_secret_key }}"
+    state: "{{ status }}"
+    filters:
+      "tag:Name": "{{ worker }}"
+  register: stop
+
+- debug:
+    msg: "Ansible when or example"
+  when: status != 'running' or status != 'restarted'
+
+- name: Send notification message via Slack all options
+  slack:
+    token: 'T03S77UFC/BJC5YAUD9/fhnm52724VR3je7xWWcmAcnM'
+    msg: " AWS instance state {{ status }}: \n :no_entry: {{ worker }}.lan {{ facts.instances|map(attribute='public_ip_address') | join ('/n') }} :no_entry: "
+    channel: '#alerts'
+    username: 'Ansible'
+  when: status != 'running' or status != 'restarted
+
+- name: Send notification message via Slack all options
+  slack:
+    token: 'T03S77UFC/BJC5YAUD9/fhnm52724VR3je7xWWcmAcnM'
+    msg: " AWS instance state {{ status }}: \n :heavy_check_mark: {{ worker }}.lan {{ facts.instances|map(attribute='public_ip_address') | join ('/n') }} :heavy_check_mark: "
+    channel: '#alerts' 
+    username: 'Ansible'
+  when: status = 'running' or status = 'restarted'
+

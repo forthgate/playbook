@@ -1,0 +1,3 @@
+ami_id:  "ami-02bcbb802e03574ba"
+docker_compose_url: "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-Linux-x86_64"
+docker_credential_pass_url: "https://github.com/docker/docker-credential-helpers/releases/download/v0.6.2/docker-credential-pass-v0.6.2-amd64.tar.gz"

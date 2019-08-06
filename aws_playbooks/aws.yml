@@ -1,0 +1,33 @@
+### Create AWS EC2 Instance ###
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  roles:
+    - aws
+
+### Prepare instance for deploy ###
+- hosts: "{{ worker }}"
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_ssh_private_key_file: "/home/new/.ssh/aws.pem"
+    ansible_python_interpreter: /usr/bin/python3
+  gather_facts: True
+  roles:
+    - aws_deploy_worker
+
+### Deploy airflow worker container ###
+- hosts: "{{ worker }}"
+  remote_user: master
+  gather_facts: True
+  roles:
+    - aws_docker_deploy
+
+### Send notification ###
+  post_tasks:
+    - name: Send notification message via Slack all options
+      slack:
+        token: "{{ token }}"
+        msg: " Created AWS instance: \n :heavy_check_mark: {{ worker }}.lan {{ inventory_hostname }} :heavy_check_mark: "
+        channel: '#alerts'
+        username: 'Ansible'

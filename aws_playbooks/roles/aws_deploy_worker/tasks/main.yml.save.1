@@ -1,0 +1,10 @@
+---
+
+- name: get container status
+#  raw: docker stats --all & sleep 1 ; kill $!
+  raw: docker stats --all --no-stream
+  register: status
+
+- name: show container status
+  debug:
+    msg: "{{ status.stdout_ }}"
